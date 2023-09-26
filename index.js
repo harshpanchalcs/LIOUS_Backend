@@ -1,13 +1,17 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000; // Set your desired port number
+const bodyParser = require('body-parser');
+const db = require('./dbconnection'); // Import the database connection
+const apiRoutes = require('./api'); // Import the API routes
 
-// Define a basic route
-app.get('/', (req, res) => {
-  res.send('Hello, Express!');
-});
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Use the API routes
+app.use('/api', apiRoutes);
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
