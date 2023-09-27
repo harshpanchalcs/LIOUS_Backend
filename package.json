@@ -4,6 +4,7 @@
   "description": "Production Backend for LIOUS website",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Harsh Panchal",
@@ -12,5 +13,8 @@
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "mongoose": "^7.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
