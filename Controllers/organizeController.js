@@ -1,7 +1,4 @@
-
-const express = require('express');
-const router = express.Router();
-const organizemodel = require('./../Models/organizeModel');
+const organizemodel = require('../models/organizeModel');
 // POST route for data insertion
 
 exports.insertOrganization = (req, res) => {
