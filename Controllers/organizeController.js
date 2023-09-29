@@ -6,7 +6,7 @@ const organizemodel = require('./../Models/organizeModel');
 
 exports.insertOrganization = (req, res) => {
     try {
-      
+      console.log("hiii");
       const newData = new organizemodel({
         Organization: req.body.Name,
         Industry: req.body.Industry,
@@ -28,50 +28,34 @@ exports.insertOrganization = (req, res) => {
     }
 }
 
-exports.insertUnit = (req, res) => {
-
-    // const express = require('express');
-     const { MongoClient } = require('mongodb');
-     const app = express();
-    // const port = 3000;
-    
-    // app.use(express.json());
-    
-    const uri = 'mongodb://127.0.0.1:27017'; // Replace with your MongoDB URI
-    
-    // app.get('/checkField', async (req, res) => {
-       const Organization = req.query.Organization;
-    
-      const client = new MongoClient(uri);
-    
-      try {
-        client.connect();
-    
-        const database = client.db('LIOUS_Backend'); // Replace with your database name
-        const collection = database.collection('organizations'); // Replace with your collection name
-    
-        const filter = {};
-        filter[Organization] = { $Organization: String };
-    
-        const document =  collection.findOne(filter);
-    
-        if (document) {
-          res.json({ message: `Field "${Organization}" exists in at least one document.` });
-        } else {
-          res.json({ message: `Field "${Organization}" does not exist in any document.` });
-        }
-      } catch (error) {
-        console.error('Error checking field existence:', error);
-        res.status(500).json({ error: 'An error occurred.' });
-      }
+exports.getOrganization = async (req, res) => {
+    try {
+      const data = await organizemodel.find({Organization: req.body.Name});
+      res.json(data);
+       }
+    catch(error){
+     res.status(500).json({ message: 'Error fetching data' });
     }
-    
-    // app.listen(port, () => {
-    //   console.log(`Server is running on port ${port}`);
-    // });
-    
-    
-    //res.send('Insert unit');
+}
+
+exports.insertUnit = async (req, res) => {
+  try {
+    const data = await organizemodel.findOne({Organization: req.body.Name});
+    data.units.push({
+      UnitName: req.body.UnitName,
+      Address: req.body.Address,
+      Contact: req.body.Contact,
+      EmailId: req.body.EmailId,
+    });
+    data.save();
+    res.json(data);
+    //console.log(res);
+  }
+  catch(error){
+     res.status(500).json({ message: 'Error fetching data' });
+  }
+   //res.send('Insert unit');  
+}
 
 
 exports.insertEmployee = (req, res) => {

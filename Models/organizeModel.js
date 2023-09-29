@@ -26,7 +26,7 @@ const unitSchema = new mongoose.Schema({
 const organizeSchema = new mongoose.Schema({
     Organization:{
         type:String,
-        required:[true,'Organization can not be empty!']
+        //required:[true,'Organization can not be empty!']
     },
     Contact:Number,
     Industry:String,

@@ -8,7 +8,8 @@ router.get('/', (req, res) => {
 const organizationController = require('../Controllers/organizeController');
 router
     .route('/organization')
-    .post(organizationController.insertOrganization);
+    .post(organizationController.insertOrganization)
+    .get(organizationController.getOrganization);
 
 router
     .route('/unit')
