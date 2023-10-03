@@ -4,9 +4,22 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  companyName: {
     type: String,
-    required: [true, 'Please tell us your name!']
+    required: [true, 'Please tell us your company name!']
+  },
+  companyCinNo: {
+    type: String,
+    required: [true, 'Please tell us your company CIN No!']
+  },
+  fullName: {
+    type: String,
+    required: [true, 'Please tell us your full name!']
+  },
+  contactNo: {
+    type: String,
+    required: [true, 'Please tell us your contact no!'],
+    validate: [validator.isMobilePhone, 'Please provide a valid contact no']
   },
   email: {
     type: String,
@@ -15,7 +28,6 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
-  photo: String,
   role: {
     type: String,
     enum: ['user', 'admin'],

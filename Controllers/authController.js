@@ -34,13 +34,34 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.signup = catchAsync(async (req, res, next) => {
 
-    const newUser =  User.create({
-      name: req.body.name,
+  try {
+    const newUser = new User({
+      companyName: req.body.companyName,
+      companyCinNo: req.body.companyCinNo,
+      fullName: req.body.fullName,
+      contactNo: req.body.contactNo,
       email: req.body.email,
       password: req.body.password,
-      passwordConfirm: req.body.passwordConfirm
+      passwordConfirm: req.body.passwordConfirm,
     });
-  
-    createSendToken(newUser, 201, res);
-    //res.send('User Login Page');
-  });
+    await newUser.save();
+    //createSendToken(newUser, 201, res);
+    res.send('User Login Page');
+  } 
+  catch (error) {
+    
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      res.status(400).json({ errors });
+    } 
+    else if (error.code === 11000 && error.keyPattern.email) {
+      res.status(400).json({ error: 'Email already exists' });
+    } 
+    else {
+      // Handle other errors
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+  }
+
+});
