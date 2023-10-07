@@ -55,7 +55,12 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
   active: {
     type: Boolean,
-    default: true,
+    default: false,
+    select: false
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
     select: false
   }
 });
@@ -82,7 +87,7 @@ userSchema.pre('save', function(next) {
 
 userSchema.pre(/^find/, function(next) {
   // this points to the current query
-  this.find({ active: { $ne: false } });
+  this.find({ isDeleted: { $ne: true } });
   next();
 });
 
@@ -108,7 +113,7 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
 };
 
 userSchema.methods.createPasswordResetToken = function() {
-  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetToken = crypto.randomInt(100000, 999999).toString();
 
   this.passwordResetToken = crypto
     .createHash('sha256')

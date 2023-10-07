@@ -1,6 +1,8 @@
 const catchAsync = require('../utils/catchAsync');
-const User = require('../models/userModel');
+const User = require('../Models/userModel');
 const jwt = require('jsonwebtoken');
+const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email');
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -45,8 +47,10 @@ exports.signup = catchAsync(async (req, res, next) => {
       passwordConfirm: req.body.passwordConfirm,
     });
     await newUser.save();
+    SendVerificationMail(req.body.email, res, next);
+    
     //createSendToken(newUser, 201, res);
-    res.send('User Login Page');
+    //res.send('User Login Page');
   } 
   catch (error) {
     
@@ -58,10 +62,43 @@ exports.signup = catchAsync(async (req, res, next) => {
       res.status(400).json({ error: 'Email already exists' });
     } 
     else {
-      // Handle other errors
-      res.status(500).json({ error: 'Internal Server Error' });
+      const errorName = error.name;
+      const errorMessage = error.message;
+      res.status(500).json({ errorName, errorMessage});
     }
+  }
+});
 
+const SendVerificationMail = catchAsync(async (email, res, next) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError('There is no user with email address.', 404));
+  }
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  console.log(email+ ": " + resetToken);
+
+  const message = `Varifivation OTP is ${resetToken}.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min)',
+      message
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email!'
+    });
+  } 
+  catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    
+    const errorMessage = err.message;
+    res.status(430).json({ 'There was an error sending the email. Try again later!': errorMessage });
   }
 
 });
