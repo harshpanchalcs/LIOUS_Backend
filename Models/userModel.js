@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-  active: {
+  isVarified: {
     type: Boolean,
     default: false,
     select: false

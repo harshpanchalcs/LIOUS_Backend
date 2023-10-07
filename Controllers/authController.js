@@ -34,8 +34,18 @@ const createSendToken = (user, statusCode, res) => {
     });
   };
 
+exports.login = catchAsync(async (req, res, next) => {
+  createSendToken(newUser, 201, res);
+});
+
 exports.signup = catchAsync(async (req, res, next) => {
 
+  const user = await User.findOne({ email : req.body.email }).select('+isVarified');
+  if (user && !user.isVarified) {
+    console.log("User already exist but not varified. Deleteing the user" + user.id + " " + user.email );
+    user.deleteOne();
+  }
+  
   try {
     const newUser = new User({
       companyName: req.body.companyName,
@@ -48,9 +58,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     });
     await newUser.save();
     SendVerificationMail(req.body.email, res, next);
-    
-    //createSendToken(newUser, 201, res);
-    //res.send('User Login Page');
+  
+    res.send('User Login Page');
   } 
   catch (error) {
     
@@ -70,35 +79,33 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 const SendVerificationMail = catchAsync(async (email, res, next) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    return next(new AppError('There is no user with email address.', 404));
-  }
-  const resetToken = user.createPasswordResetToken();
-  await user.save({ validateBeforeSave: false });
-  console.log(email+ ": " + resetToken);
-
-  const message = `Varifivation OTP is ${resetToken}.`;
-
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Your password reset token (valid for 10 min)',
-      message
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Token sent to email!'
-    });
-  } 
-  catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new AppError('There is no user with email address.', 404));
+    }
+    const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
-    
-    const errorMessage = err.message;
-    res.status(430).json({ 'There was an error sending the email. Try again later!': errorMessage });
-  }
+    console.log(email+ ": " + resetToken);
 
+    try {
+      const message = `Varifivation OTP is ${resetToken}.`;
+      await sendEmail({
+        email: user.email,
+        subject: 'Your password reset token (valid for 10 min)',
+        message
+      });
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Token sent to email!'
+      });
+    } 
+    catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      
+      const errorMessage = err.message;
+      res.status(430).json({ 'There was an error sending the email. Try again later!': errorMessage });
+    }
 });
