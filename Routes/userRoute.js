@@ -12,7 +12,7 @@ router
 
 router
   .route('/login')
-  .post(authController.login);
+  .get(authController.login);
 
 router
   .route('/verify')
